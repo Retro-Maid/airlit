@@ -7,6 +7,7 @@ import {
 } from '../src/data/library'
 import { isNotable, KIND_TONES, type JournalEntry } from '../src/data/journal'
 import { dayLabel, formatRelative } from '../src/lib/format'
+import { updateErrorMessage } from '../src/desktop/update'
 
 const results: string[] = []
 let failures = 0
@@ -147,6 +148,22 @@ function check(label: string, actual: unknown, expected: unknown) {
 
   saveLibrary('mock', defaultLibrary())
   check('デモでは消さない', loadLibrary('mock').scenes.length, defaultLibrary().scenes.length)
+}
+
+// --- 更新エラーの表示（英語のまま出さない） -------------------------------
+{
+  const m = (s: string) => updateErrorMessage(new Error(s))
+  check('リリース未公開', m('Could not fetch a valid release JSON from the remote'),
+    '公開されているリリースが見つかりませんでした。しばらくしてからもう一度お試しください。')
+  check('署名の検証失敗', m('signature verification failed'),
+    '配布物の署名を確認できませんでした。安全のため更新を中止しました。')
+  check('通信断', m('error sending request for url'), 'ネットワークに接続できませんでした。')
+  check('タイムアウト', m('operation timed out'),
+    '接続がタイムアウトしました。ネットワークの状態を確認してください。')
+  // 未知のエラーは握りつぶさず、原文を添えて出す
+  check('未知のエラーは原文を残す', m('some unmapped failure'),
+    '更新を確認できませんでした（some unmapped failure）。')
+  check('情報がない場合', updateErrorMessage(null), '更新を確認できませんでした。')
 }
 
 console.log(results.join('\n'))

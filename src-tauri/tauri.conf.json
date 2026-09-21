@@ -59,7 +59,9 @@
         "type": "downloadBootstrapper"
       }
     },
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": true,
+    "publisher": "Retro-Maid",
+    "copyright": "Copyright (c) 2026 Retro-Maid"
   },
   "plugins": {
     "updater": {

@@ -11,8 +11,8 @@
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
     "test": "npm run test:cloud && npm run test:app",
-    "test:cloud": "esbuild tests/cloud.test.ts --bundle --platform=node --format=esm --external:lucide-react --external:react --outfile=node_modules/.cache/airlit-cloud.mjs --log-level=error && node node_modules/.cache/airlit-cloud.mjs",
-    "test:app": "esbuild tests/app.test.ts --bundle --platform=node --format=esm --external:lucide-react --external:react --outfile=node_modules/.cache/airlit-app.mjs --log-level=error && node node_modules/.cache/airlit-app.mjs"
+    "test:cloud": "esbuild tests/cloud.test.ts --bundle --platform=node --format=esm --external:lucide-react --external:react --external:@tauri-apps/* --outfile=node_modules/.cache/airlit-cloud.mjs --log-level=error && node node_modules/.cache/airlit-cloud.mjs",
+    "test:app": "esbuild tests/app.test.ts --bundle --platform=node --format=esm --external:lucide-react --external:react --external:@tauri-apps/* --outfile=node_modules/.cache/airlit-app.mjs --log-level=error && node node_modules/.cache/airlit-app.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",

@@ -23,8 +23,35 @@ export type UpdateState =
 /** Kept between calls so 「再起動して適用」 can install what 「確認」 found. */
 let pending: Update | null = null
 
-const message = (cause: unknown) =>
-  cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : '更新を確認できませんでした'
+/**
+ * The updater plugin reports in English, which would be the only English text in the app.
+ * The cases below are the ones a user can actually hit and do something about; anything else
+ * keeps its original wording after a Japanese lead-in, so an unexpected failure stays
+ * diagnosable rather than being flattened into a vague message.
+ */
+export function updateErrorMessage(cause: unknown): string {
+  const raw = cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : ''
+  if (!raw) return '更新を確認できませんでした。'
+  const lower = raw.toLowerCase()
+
+  if (lower.includes('release json') || lower.includes('404') || lower.includes('not found')) {
+    return '公開されているリリースが見つかりませんでした。しばらくしてからもう一度お試しください。'
+  }
+  if (lower.includes('signature') || lower.includes('minisign')) {
+    return '配布物の署名を確認できませんでした。安全のため更新を中止しました。'
+  }
+  if (lower.includes('timed out') || lower.includes('timeout')) {
+    return '接続がタイムアウトしました。ネットワークの状態を確認してください。'
+  }
+  if (lower.includes('sending request') || lower.includes('network') || lower.includes('dns')
+    || lower.includes('connect') || lower.includes('failed to fetch')) {
+    return 'ネットワークに接続できませんでした。'
+  }
+  if (lower.includes('403') || lower.includes('forbidden') || lower.includes('401')) {
+    return 'リリースへアクセスできませんでした。'
+  }
+  return `更新を確認できませんでした（${raw}）。`
+}
 
 export async function checkForUpdate(): Promise<UpdateState> {
   if (!isDesktop()) return { phase: 'current' }
@@ -35,7 +62,7 @@ export async function checkForUpdate(): Promise<UpdateState> {
     return { phase: 'available', version: update.version, notes: update.body ?? null }
   } catch (cause) {
     pending = null
-    return { phase: 'error', message: message(cause) }
+    return { phase: 'error', message: updateErrorMessage(cause) }
   }
 }
 
@@ -63,7 +90,7 @@ export async function installUpdate(onProgress: (state: UpdateState) => void): P
     })
     onProgress({ phase: 'ready' })
   } catch (cause) {
-    onProgress({ phase: 'error', message: message(cause) })
+    onProgress({ phase: 'error', message: updateErrorMessage(cause) })
   }
 }
 
