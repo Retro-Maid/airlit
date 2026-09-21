@@ -1,0 +1,53 @@
+name: release
+
+# Cutting a release: push a tag such as v0.1.0. The installer, the updater manifest
+# (latest.json) and their signatures are attached to a draft release for review before
+# publishing. TAURI_SIGNING_PRIVATE_KEY must be set as a repository secret — the private key
+# never belongs in the repository itself.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      # The frontend must typecheck and its logic must pass before anything is signed.
+      - run: npx tsc -b
+      - run: npm test
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: AirLit ${{ github.ref_name }}
+          releaseBody: |
+            Windows 向けインストーラです。`AirLit_x64-setup.exe` をダウンロードしてください。
+
+            AirLit は Nature Remo の非公式クライアントです。Nature 株式会社とは関係ありません。
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: true

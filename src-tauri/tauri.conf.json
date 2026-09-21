@@ -1,0 +1,75 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "AirLit",
+  "version": "0.1.0",
+  "identifier": "io.github.retro-maid.airlit",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "AirLit",
+        "width": 1280,
+        "height": 820,
+        "resizable": false,
+        "fullscreen": false,
+        "center": true,
+        "decorations": false,
+        "transparent": false,
+        "theme": null,
+        "maximizable": false,
+        "minimizable": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "img-src": "'self' data: asset: http://asset.localhost",
+        "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src": "'self' https://fonts.gstatic.com",
+        "connect-src": "'self' ipc: http://ipc.localhost https://api.nature.global https://github.com https://objects.githubusercontent.com https://release-assets.githubusercontent.com"
+      },
+      "devCsp": {
+        "default-src": "'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173",
+        "img-src": "'self' data: asset: http://asset.localhost http://localhost:5173",
+        "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com http://localhost:5173",
+        "font-src": "'self' data: https://fonts.gstatic.com",
+        "connect-src": "'self' ipc: http://ipc.localhost https://api.nature.global http://localhost:5173 ws://localhost:5173 https://github.com https://objects.githubusercontent.com https://release-assets.githubusercontent.com"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/Retro-Maid/airlit/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI1MzkyNUFBREVBMkFENkQKUldSdHJhTGVxaVU1dGVGUjMzNE9XY3BtSmJYcTVuRXR0bm9RaEVQTHExY2V4RUt5S1dBL0V0S2YK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

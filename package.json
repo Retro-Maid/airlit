@@ -1,0 +1,50 @@
+{
+  "name": "airlit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build",
+    "test": "npm run test:cloud && npm run test:app",
+    "test:cloud": "esbuild tests/cloud.test.ts --bundle --platform=node --format=esm --external:lucide-react --external:react --outfile=node_modules/.cache/airlit-cloud.mjs --log-level=error && node node_modules/.cache/airlit-cloud.mjs",
+    "test:app": "esbuild tests/app.test.ts --bundle --platform=node --format=esm --external:lucide-react --external:react --outfile=node_modules/.cache/airlit-app.mjs --log-level=error && node node_modules/.cache/airlit-app.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-autostart": "^2.5.1",
+    "@tauri-apps/plugin-notification": "^2.4.0",
+    "@tauri-apps/plugin-opener": "^2.5.5",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-store": "^2.4.5",
+    "@tauri-apps/plugin-updater": "^2.12.0",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.5",
+    "@types/node": "^26.6.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  },
+  "description": "AirLit — Nature Remo非公式デスクトップクライアント",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Retro-Maid/airlit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Retro-Maid/airlit/issues"
+  },
+  "homepage": "https://github.com/Retro-Maid/airlit",
+  "author": "Retro-Maid"
+}

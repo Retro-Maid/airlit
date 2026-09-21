@@ -1,0 +1,33 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "AirLit のフロントエンドに許可する操作",
+  "windows": [
+    "main",
+    "mini"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-minimize",
+    "core:window:allow-unminimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-is-maximized",
+    "core:window:allow-close",
+    "core:window:allow-hide",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
+    "core:window:allow-start-dragging",
+    "store:default",
+    "notification:default",
+    "opener:allow-open-url",
+    "opener:allow-default-urls",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-set-position",
+    "core:webview:allow-internal-toggle-devtools",
+    "updater:default",
+    "process:allow-restart"
+  ]
+}

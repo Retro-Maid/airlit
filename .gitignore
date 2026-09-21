@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Machine-specific: points the Rust build output at a drive with free space
+src-tauri/.cargo/config.toml
+
+# Rust
+src-tauri/target/
+src-tauri/gen/
+
+# Brand assets: logo.png (README) and src-tauri/icons/* are tracked.
+# These are the full-resolution originals they were generated from.
+ico.png
+logo.source.png
+
+# Design reference from the original mockup, not part of the app.
+moc.png
+prototype.html
+
+# Maintainer-only notes (release steps, signing). Not for the public repository.
+RELEASING.local.md
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Never commit an API token or a signing key.
+# The updater's PRIVATE key belongs in a GitHub secret, never in the repository.
+.env
+.env.*
+*.key
+*.pem
