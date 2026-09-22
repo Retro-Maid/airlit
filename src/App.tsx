@@ -97,6 +97,8 @@ function App({ initialSession }: { initialSession: Session | null }) {
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system'
   })
   const [reduceMotion, setReduceMotion] = useState(() => localStorage.getItem('airlit-reduce-motion') === 'true')
+  // Desktop notifications were sent regardless of the switch, which showed them as off.
+  const [notifyAutomation, setNotifyAutomation] = useState(() => localStorage.getItem('airlit-notify-automation') !== 'false')
   const [compactUi, setCompactUi] = useState(() => localStorage.getItem('airlit-compact-ui') === 'true')
   const [trayOnClose, setTrayOnClose] = useState(() => localStorage.getItem('airlit-tray-on-close') === 'true')
   const [launchAtLogin, setLaunchAtLogin] = useState(() => localStorage.getItem('airlit-launch-at-login') === 'true')
@@ -116,6 +118,9 @@ function App({ initialSession }: { initialSession: Session | null }) {
   const selectedAc = (selected ? acSettings[selected.id] : undefined) ?? defaultAcSettings
   const notify = (text: string) => { toastCount.current += 1; setToast({ id: toastCount.current, text }) }
   const selectDevice = (id: string) => { setSelectedId(id); setInspectorClosed(false) }
+  // The library ticker keeps a stale closure, so the switch is read through a ref.
+  const notifyAutomationRef = useRef(notifyAutomation)
+  notifyAutomationRef.current = notifyAutomation
   const [journal, setJournal] = useState<JournalEntry[]>([])
   const record = (entry: Parameters<typeof appendJournal>[1]) =>
     setJournal(list => [appendJournal(adapter.kind, entry), ...list].slice(0, 200))
@@ -144,6 +149,7 @@ function App({ initialSession }: { initialSession: Session | null }) {
   useEffect(() => { const media = window.matchMedia('(prefers-color-scheme: dark)'); const update = () => setSystemDark(media.matches); media.addEventListener('change', update); return () => media.removeEventListener('change', update) }, [])
   useEffect(() => { localStorage.setItem('airlit-theme', theme) }, [theme])
   useEffect(() => { localStorage.setItem('airlit-reduce-motion', String(reduceMotion)) }, [reduceMotion])
+  useEffect(() => { localStorage.setItem('airlit-notify-automation', String(notifyAutomation)) }, [notifyAutomation])
   useEffect(() => { localStorage.setItem('airlit-compact-ui', String(compactUi)) }, [compactUi])
   useEffect(() => { localStorage.setItem('airlit-demo-mode', String(demoMode)) }, [demoMode])
   useEffect(() => { localStorage.setItem('airlit-home-name', homeName) }, [homeName])
@@ -234,7 +240,7 @@ function App({ initialSession }: { initialSession: Session | null }) {
     const partial = result.missing > 0 ? `（${result.missing}件は対象の家電が見つかりません）` : ''
     notify(`「${automation.name}」を自動実行しました${partial}`)
     record({ kind: 'automation', title: automation.name, detail: `${result.done}件の操作を実行${partial}`, source: '自動実行' })
-    if (document.hidden) void notifyNative('オートメーションを実行', `「${automation.name}」を実行しました`)
+    if (document.hidden && notifyAutomationRef.current) void notifyNative('オートメーションを実行', `「${automation.name}」を実行しました`)
   }, (reservation, outcome, result) => {
     // A reservation whose moment passed while the app was closed is reported, never run late.
     if (outcome === 'missed') {
@@ -247,7 +253,7 @@ function App({ initialSession }: { initialSession: Session | null }) {
     }
     notify(`予約「${reservation.name}」を実行しました`)
     record({ kind: 'automation', title: reservation.name, detail: '予約を実行', source: '予約' })
-    if (document.hidden) void notifyNative('予約を実行', `「${reservation.name}」を実行しました`)
+    if (document.hidden && notifyAutomationRef.current) void notifyNative('予約を実行', `「${reservation.name}」を実行しました`)
   })
   // Finished reservations have already been reported in 履歴, so they are not kept between runs.
   useEffect(() => { library.clearFinishedReservations() }, [adapter.kind])
@@ -305,7 +311,7 @@ function App({ initialSession }: { initialSession: Session | null }) {
       {page === 'devices' && remo.status === 'ready' && !!devices.length && <DevicesScreen devices={devices} selectedId={selectedId} onSelect={selectDevice} onToggle={toggle} onTemperature={changeTemperature} acSettings={acSettings} pending={remo.pending} onCreate={() => setAddDeviceOpen(true)} pendingReservations={library.reservations.filter(r => r.status === 'pending').length} lastSyncAt={remo.lastSyncAt} />}
       {page === 'scenes' && <ScenesScreen notify={notify} onCreate={() => setEditor('scene')} scenes={library.scenes} onRun={runScene} onDelete={library.removeScene} missingFor={missingFor} />}{page === 'automations' && <AutomationsScreen onCreate={() => setEditor('automation')} automations={library.automations} onToggle={library.setAutomationEnabled} describeActions={describeActions} nextRun={nextRun} />}
       {page === 'reservations' && <ReservationsScreen devices={devices} signals={remo.signals} acSettings={acSettings} reservations={library.reservations} onCreate={reservation => { library.addReservation(reservation); notify(`${formatTime(reservation.at)}に「${reservation.name}」を予約しました`) }} onDelete={library.removeReservation} />}
-      {page === 'history' && <HistoryScreen entries={journal} />}{page === 'settings' && <SettingsScreen theme={theme} setTheme={setTheme} reduceMotion={reduceMotion} setReduceMotion={setReduceMotion} compactUi={compactUi} setCompactUi={setCompactUi} trayOnClose={trayOnClose} setTrayOnClose={setTrayOnClose} launchAtLogin={launchAtLogin} setLaunchAtLogin={value => {
+      {page === 'history' && <HistoryScreen entries={journal} />}{page === 'settings' && <SettingsScreen notifyAutomation={notifyAutomation} setNotifyAutomation={setNotifyAutomation} theme={theme} setTheme={setTheme} reduceMotion={reduceMotion} setReduceMotion={setReduceMotion} compactUi={compactUi} setCompactUi={setCompactUi} trayOnClose={trayOnClose} setTrayOnClose={setTrayOnClose} launchAtLogin={launchAtLogin} setLaunchAtLogin={value => {
         setLaunchAtLogin(value)
         void setAutostart(value).then(actual => { if (actual !== null && actual !== value) { setLaunchAtLogin(actual); notify('自動起動の設定を変更できませんでした') } })
       }} openSetup={() => setSetupOpen(true)} demoMode={demoMode} onAdminGesture={() => setDemoConfirm(true)} remoUnits={remo.remoUnits} connected={!!session} account={account} onConnect={() => setTokenOpen(true)} onDisconnect={() => { void clearSession(); setSession(null); setAccount(null); notify('接続を解除しました') }} secureStorage={usingSecureStorage()} onReset={() => { setTheme('system'); setReduceMotion(false); setCompactUi(false); notify('設定を初期状態に戻しました') }} />}

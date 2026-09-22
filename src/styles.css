@@ -839,3 +839,7 @@ button.home-selector:hover svg:last-child,button.home-selector:focus-visible svg
 .inspector .control-line { grid-template-columns:1fr; }
 .inspector .control-line > svg { display:none; }
 .inspector .control-line .tabs button { font-size:12px; }
+
+/* 右パネルは中身が縦に伸びる。最後の行が窓の縁で切れないよう、下に余白を残す。 */
+.inspector { padding-bottom:22px; }
+.last-operation { padding-bottom:2px; }
